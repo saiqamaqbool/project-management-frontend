@@ -1,0 +1,61 @@
+{
+  "employees": [
+    {
+      "id": "1",
+      "employeeId": "1",
+      "employeeName": "John Doe",
+      "role": "Sales",
+      "email": "john@example.com",
+      "leavesTaken": 2,
+      "leavesPending": 1
+    },
+    {
+      "id": "29a2",
+      "employeeId": "2",
+      "employeeName": "saiqa",
+      "role": "Fullstack Developer",
+      "email": "saiqamaqbool@gmail.com"
+    },
+    {
+      "id": "2fe1",
+      "employeeId": "3",
+      "employeeName": "saiqa maqbool",
+      "role": "QA",
+      "email": "girlscollegeproject432@gmail.com"
+    },
+    {
+      "id": "c183",
+      "employeeId": "5",
+      "employeeName": "abcd",
+      "role": "Frontend Developer",
+      "email": "abcd@123",
+      "leavesTaken": 4,
+      "leavesPending": 7
+    },
+    {
+      "id": "4ebd",
+      "employeeId": "6",
+      "employeeName": "iqra",
+      "role": "Data Scientist",
+      "email": "iqra@123",
+      "leavesTaken": 3,
+      "leavesPending": 1
+    },
+    {
+      "id": "0de6",
+      "employeeId": "6",
+      "employeeName": "final employee",
+      "role": "Data Scientist",
+      "email": "final@employee",
+      "leavesTaken": 5,
+      "leavesPending": 8
+    },
+    {
+      "id": "c9b3",
+      "employeeId": "10",
+      "employeeName": "lasttry",
+      "role": "Backend Developer",
+      "email": "last@try"
+    }
+  ]
+}

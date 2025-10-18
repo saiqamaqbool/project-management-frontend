@@ -1,0 +1,22 @@
+{
+  "clients": [
+    {
+      "id": "1",
+      "clientId": "CL001",
+      "clientName": "John Doe",
+      "clientEmail": "john.doe@example.com"
+    },
+    {
+      "id": "2",
+      "clientId": "CL002",
+      "clientName": "Alice Smith",
+      "clientEmail": "alice.smith@example.com"
+    },
+    {
+      "id": "0e99",
+      "clientId": "CI003",
+      "clientName": "Elon Musk",
+      "clientEmail": "elon@mask"
+    }
+  ]
+}

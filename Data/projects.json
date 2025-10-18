@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "id": "1",
+      "projectId": "P001",
+      "projectName": "Website Redesign",
+      "projectDescription": "A full redesign of the client’s company website.",
+      "startDate": "2025-01-15",
+      "endDate": "2025-03-15"
+    },
+    {
+      "id": "2",
+      "projectId": "P002",
+      "projectName": "Mobile App Development",
+      "projectDescription": "Developing a cross-platform mobile app.",
+      "startDate": "2025-02-01",
+      "endDate": "2025-06-01"
+    },
+    {
+      "id": "239a",
+      "projectId": "P003",
+      "projectName": "Project Management Syatem",
+      "projectDescription": "Project Management Syatem",
+      "startDate": "2025-10-17",
+      "endDate": "2025-10-22"
+    }
+  ]
+}
