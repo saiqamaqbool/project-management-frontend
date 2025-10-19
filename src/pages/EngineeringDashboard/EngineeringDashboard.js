@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProjects } from '../../features/projects/projectsSlice';
+import { fetchAllProjects } from '../../features/projects/projectsSlice';
 import { fetchEmployees } from '../../features/employees/employeesSlice';
 import Sidebar from '../../components/Layout/Sidebar';
 import Navbar from '../../components/Layout/Navbar';
@@ -16,7 +16,7 @@ const EngineeringDashboard = () => {
   const [allocationPercent, setAllocationPercent] = useState('');
 
   useEffect(() => {
-    dispatch(fetchProjects());
+    dispatch(fetchAllProjects()); // ✅ updated
     dispatch(fetchEmployees());
   }, [dispatch]);
 
@@ -26,7 +26,6 @@ const EngineeringDashboard = () => {
       return;
     }
 
-    // simulate allocation success
     toast.success(`Allocated ${allocationPercent}% of ${selectedEmployee} to ${selectedProject.name}`);
     setSelectedEmployee('');
     setAllocationPercent('');

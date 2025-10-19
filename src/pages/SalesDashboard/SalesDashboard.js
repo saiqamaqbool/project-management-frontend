@@ -1,62 +1,114 @@
-
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../../components/Layout/Sidebar";
 import Navbar from "../../components/Layout/Navbar";
-
-import { fetchProjects, addProject } from "../../features/projects/projectsSlice";
-import { fetchClients, addClient } from "../../features/clients/clientsSlice";
-
-import AddProjectForm from "../../components/Layout/Forms/AddProjectForm";
 import AddClientForm from "../../components/Layout/Forms/AddClientForm";
+import AddProjectForm from "../../components/Layout/Forms/AddProjectForm";
+import { fetchClients, addClient } from "../../features/clients/clientsSlice";
+import {
+  fetchProjectsByClient,
+  addProject,
+  addProjectLocal,
+  clearProjects,
+} from "../../features/projects/projectsSlice";
 
 const SalesDashboard = () => {
   const dispatch = useDispatch();
-  const { projects, loading: projectsLoading } = useSelector((state) => state.projects);
-  const { clients, loading: clientsLoading } = useSelector((state) => state.clients);
+  const { clients, loading: clientsLoading } = useSelector(
+    (state) => state.clients
+  );
+  const { projects, loading: projectsLoading } = useSelector(
+    (state) => state.projects
+  );
 
-  const [showAddProjectForm, setShowAddProjectForm] = useState(false);
   const [showAddClientForm, setShowAddClientForm] = useState(false);
+  const [showAddProjectForm, setShowAddProjectForm] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    dispatch(fetchProjects());
     dispatch(fetchClients());
+    dispatch(clearProjects());
   }, [dispatch]);
 
-  // ✅ Function to handle adding a new project
-  const handleAddProject = async (projectData) => {
-    await dispatch(addProject(projectData));
-    dispatch(fetchProjects()); // Refresh list
+  const handleClientClick = (client) => {
+    setSelectedClient(client);
+    dispatch(fetchProjectsByClient(client.clientId)); // dynamic fetch
   };
 
-  // ✅ Function to handle adding a new client
   const handleAddClient = async (clientData) => {
-    await dispatch(addClient(clientData));
-    dispatch(fetchClients()); // Refresh list
+    const action = await dispatch(addClient(clientData));
+    const newClient = action.payload;
+    setShowAddClientForm(false);
+    setSelectedClient(newClient);
+    dispatch(fetchProjectsByClient(newClient.clientId)); // fetch projects for new client
   };
+
+  const handleAddProject = async (projectData) => {
+    if (!selectedClient) return;
+
+    try {
+      const action = await dispatch(
+        addProject({ clientId: selectedClient.clientId, project: projectData })
+      );
+      const newProject = action.payload;
+
+      if (newProject) {
+        dispatch(addProjectLocal(newProject)); // update UI instantly
+      }
+
+      await dispatch(fetchProjectsByClient(selectedClient.clientId)); // sync backend & frontend
+      setShowAddProjectForm(false);
+    } catch (err) {
+      console.error("Error adding project:", err);
+    }
+  };
+
+  const handleBackToClients = () => {
+    setSelectedClient(null);
+    setShowAddProjectForm(false);
+    dispatch(clearProjects());
+    setSearchTerm("");
+  };
+
+  const filteredClients = clients.filter((client) =>
+    client.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div style={{ display: "flex" }}>
       <Sidebar
         role="sales"
-        onAddProject={() => setShowAddProjectForm(true)}
         onAddClient={() => setShowAddClientForm(true)}
+        onAddProject={() => selectedClient && setShowAddProjectForm(true)}
       />
-
       <div style={{ flex: 1 }}>
         <Navbar />
-        <div style={{ padding: "20px", background: "#F5F5F5", minHeight: "90vh" }}>
-          <h2 style={{ color: "#673AB7", marginBottom: "20px" }}>Sales Dashboard</h2>
+        <div
+          style={{
+            padding: "20px",
+            background: "#F5F5F5",
+            minHeight: "90vh",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <h2 style={{ color: "#673AB7" }}>Sales Dashboard</h2>
+            {!selectedClient && (
+              <input
+                type="text"
+                placeholder="Search clients..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  minWidth: "200px",
+                }}
+              />
+            )}
+          </div>
 
-          {/* ✅ Add Project Form */}
-          {showAddProjectForm && (
-            <AddProjectForm
-              onSubmit={handleAddProject}
-              closeForm={() => setShowAddProjectForm(false)}
-            />
-          )}
-
-          {/* ✅ Add Client Form */}
           {showAddClientForm && (
             <AddClientForm
               onSubmit={handleAddClient}
@@ -64,64 +116,135 @@ const SalesDashboard = () => {
             />
           )}
 
-          {/* Clients Section */}
-          <h3 style={{ color: "#4CAF50", marginTop: "30px" }}>Clients</h3>
-          {clientsLoading ? (
-            <p>Loading clients...</p>
-          ) : (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-              {clients.length === 0 ? (
+          {!showAddClientForm && !selectedClient && (
+            <>
+              <h3 style={{ color: "#4CAF50" }}>Clients</h3>
+              {clientsLoading ? (
+                <p>Loading clients...</p>
+              ) : filteredClients.length === 0 ? (
                 <p>No clients found.</p>
               ) : (
-                clients.map((client) => (
-                  <div
-                    key={client.id}
-                    style={{
-                      background: "#fff",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                      width: "250px",
-                    }}
-                  >
-                    <p><strong>ID:</strong> {client.clientId}</p>
-                    <p><strong>Name:</strong> {client.clientName}</p>
-                    <p><strong>Email:</strong> {client.clientEmail}</p>
-                  </div>
-                ))
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
+                  {filteredClients.map((client) => (
+                    <div
+                      key={client.clientId}
+                      onClick={() => handleClientClick(client)}
+                      style={{
+                        background: "#fff",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                        width: "250px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <p>
+                        <strong>Name:</strong> {client.clientName}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {client.clientEmail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
+            </>
           )}
 
-          {/* Projects Section */}
-          <h3 style={{ color: "#FF9800", marginTop: "30px" }}>Projects</h3>
-          {projectsLoading ? (
-            <p>Loading projects...</p>
-          ) : (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-              {projects.length === 0 ? (
-                <p>No projects found.</p>
+          {selectedClient && (
+            <>
+              <button
+                onClick={handleBackToClients}
+                style={{
+                  marginBottom: "15px",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  background: "#ccc",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                ← Back to Clients
+              </button>
+
+              <div
+                style={{
+                  background: "#E3F2FD",
+                  padding: "20px",
+                  borderRadius: "10px",
+                  marginBottom: "20px",
+                }}
+              >
+                <p>
+                  <strong>Name:</strong> {selectedClient.clientName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {selectedClient.clientEmail}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAddProjectForm(true)}
+                style={{
+                  marginBottom: "20px",
+                  padding: "10px 15px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#FF9800",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                + Add Project
+              </button>
+
+              <h3 style={{ color: "#FF9800" }}>Projects</h3>
+
+              {projectsLoading ? (
+                <p>Loading projects...</p>
+              ) : projects.length === 0 ? (
+                <p>No projects found for this client.</p>
               ) : (
-                projects.map((project) => (
-                  <div
-                    key={project.id}
-                    style={{
-                      background: "#fff",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                      width: "300px",
-                    }}
-                  >
-                    <p><strong>ID:</strong> {project.projectId}</p>
-                    <p><strong>Name:</strong> {project.projectName}</p>
-                    <p><strong>Description:</strong> {project.projectDescription}</p>
-                    <p><strong>Start:</strong> {project.startDate}</p>
-                    <p><strong>End:</strong> {project.endDate}</p>
-                  </div>
-                ))
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
+                  {projects.map((project) => (
+                    <div
+                      key={project.projectId}
+                      style={{
+                        background: "#fff",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                        width: "300px",
+                      }}
+                    >
+                      <p>
+                        <strong>Name:</strong> {project.projectName}
+                      </p>
+                      <p>
+                        <strong>Description:</strong> {project.description}
+                      </p>
+                      <p>
+                        <strong>Start:</strong> {project.startDate?.split("T")[0]}
+                      </p>
+                      <p>
+                        <strong>End:</strong> {project.endDate?.split("T")[0]}
+                      </p>
+                      <p>
+                        <strong>Daily Rate:</strong>{" "}
+                        {project.dailyRate ? project.dailyRate : "N/A"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
+            </>
+          )}
+
+          {showAddProjectForm && selectedClient && (
+            <AddProjectForm
+              onSubmit={handleAddProject}
+              closeForm={() => setShowAddProjectForm(false)}
+            />
           )}
         </div>
       </div>

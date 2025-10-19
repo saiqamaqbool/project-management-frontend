@@ -1,9 +1,10 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiHome, FiUser, FiDollarSign, FiCpu, FiBriefcase, FiPlus } from "react-icons/fi";
+// FiPlus is good for both Add Employee and Apply Leave
+import { FiHome, FiUser, FiDollarSign, FiCpu, FiBriefcase, FiPlus, FiCalendar } from "react-icons/fi";
 
-const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
+// 1. ACCEPT THE NEW PROP: onApplyLeave
+const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject, onApplyLeave }) => {
   let menuItems = [];
 
   switch (role) {
@@ -42,12 +43,22 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
     case "hr":
       menuItems = [
         { name: "Dashboard", icon: <FiHome />, path: "/dashboard" },
-        { name: "Leave Management", icon: <FiUser />, path: "/leaves" },
+
+        // 2. MODIFIED: "Leave Management" is now an ACTION item
+        // This will display the LeaveApplicationForm in the dashboard
+        {
+          name: "Apply for Leave",
+          icon: <FiCalendar />, // Changed icon for clarity
+          action: () => onApplyLeave && onApplyLeave(),
+        },
+
         {
           name: "Add Employee",
           icon: <FiPlus />,
           action: () => onAddEmployee && onAddEmployee(),
         },
+        // We can optionally keep the management link if needed, but it's redundant with the button
+        // { name: "Leave Management", icon: <FiUser />, path: "/leaves" },
       ];
       break;
 
@@ -80,6 +91,7 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
       <ul style={{ listStyle: "none", padding: 0 }}>
         {menuItems.map((item) => (
           <li key={item.name} style={{ marginBottom: "20px" }}>
+            {/* Renders as a Link if 'path' exists */}
             {item.path ? (
               <Link
                 to={item.path}
@@ -103,6 +115,7 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
                 {item.icon} <span>{item.name}</span>
               </Link>
             ) : (
+              // Renders as an actionable Div if 'action' exists
               <div
                 onClick={item.action}
                 style={{

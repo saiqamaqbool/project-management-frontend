@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../../components/Layout/Sidebar";
 import Navbar from "../../components/Layout/Navbar";
-import { fetchProjects } from "../../features/projects/projectsSlice";
+import { fetchAllProjects } from "../../features/projects/projectsSlice";
 import FinanceProjectTable from "../../components/Tables/FinanceProjectTable";
 
 const FinanceDashboard = () => {
@@ -10,7 +10,7 @@ const FinanceDashboard = () => {
   const { projects, loading } = useSelector((state) => state.projects);
 
   useEffect(() => {
-    dispatch(fetchProjects());
+    dispatch(fetchAllProjects()); // ✅ updated
   }, [dispatch]);
 
   return (
