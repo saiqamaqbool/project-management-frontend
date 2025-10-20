@@ -11,7 +11,7 @@ import {
   addProjectLocal,
   clearProjects,
 } from "../../features/projects/projectsSlice";
-
+ 
 const SalesDashboard = () => {
   const dispatch = useDispatch();
   const { clients, loading: clientsLoading } = useSelector(
@@ -20,22 +20,22 @@ const SalesDashboard = () => {
   const { projects, loading: projectsLoading } = useSelector(
     (state) => state.projects
   );
-
+ 
   const [showAddClientForm, setShowAddClientForm] = useState(false);
   const [showAddProjectForm, setShowAddProjectForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
+ 
   useEffect(() => {
     dispatch(fetchClients());
     dispatch(clearProjects());
   }, [dispatch]);
-
+ 
   const handleClientClick = (client) => {
     setSelectedClient(client);
     dispatch(fetchProjectsByClient(client.clientId)); // dynamic fetch
   };
-
+ 
   const handleAddClient = async (clientData) => {
     const action = await dispatch(addClient(clientData));
     const newClient = action.payload;
@@ -43,38 +43,38 @@ const SalesDashboard = () => {
     setSelectedClient(newClient);
     dispatch(fetchProjectsByClient(newClient.clientId)); // fetch projects for new client
   };
-
+ 
   const handleAddProject = async (projectData) => {
     if (!selectedClient) return;
-
+ 
     try {
       const action = await dispatch(
         addProject({ clientId: selectedClient.clientId, project: projectData })
       );
       const newProject = action.payload;
-
+ 
       if (newProject) {
         dispatch(addProjectLocal(newProject)); // update UI instantly
       }
-
+ 
       await dispatch(fetchProjectsByClient(selectedClient.clientId)); // sync backend & frontend
       setShowAddProjectForm(false);
     } catch (err) {
       console.error("Error adding project:", err);
     }
   };
-
+ 
   const handleBackToClients = () => {
     setSelectedClient(null);
     setShowAddProjectForm(false);
     dispatch(clearProjects());
     setSearchTerm("");
   };
-
+ 
   const filteredClients = clients.filter((client) =>
     client.clientName.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+ 
   return (
     <div style={{ display: "flex" }}>
       <Sidebar
@@ -108,14 +108,14 @@ const SalesDashboard = () => {
               />
             )}
           </div>
-
+ 
           {showAddClientForm && (
             <AddClientForm
               onSubmit={handleAddClient}
               closeForm={() => setShowAddClientForm(false)}
             />
           )}
-
+ 
           {!showAddClientForm && !selectedClient && (
             <>
               <h3 style={{ color: "#4CAF50" }}>Clients</h3>
@@ -150,7 +150,7 @@ const SalesDashboard = () => {
               )}
             </>
           )}
-
+ 
           {selectedClient && (
             <>
               <button
@@ -166,7 +166,7 @@ const SalesDashboard = () => {
               >
                 ← Back to Clients
               </button>
-
+ 
               <div
                 style={{
                   background: "#E3F2FD",
@@ -182,7 +182,7 @@ const SalesDashboard = () => {
                   <strong>Email:</strong> {selectedClient.clientEmail}
                 </p>
               </div>
-
+ 
               <button
                 onClick={() => setShowAddProjectForm(true)}
                 style={{
@@ -197,9 +197,9 @@ const SalesDashboard = () => {
               >
                 + Add Project
               </button>
-
+ 
               <h3 style={{ color: "#FF9800" }}>Projects</h3>
-
+ 
               {projectsLoading ? (
                 <p>Loading projects...</p>
               ) : projects.length === 0 ? (
@@ -239,7 +239,7 @@ const SalesDashboard = () => {
               )}
             </>
           )}
-
+ 
           {showAddProjectForm && selectedClient && (
             <AddProjectForm
               onSubmit={handleAddProject}
@@ -251,5 +251,5 @@ const SalesDashboard = () => {
     </div>
   );
 };
-
+ 
 export default SalesDashboard;

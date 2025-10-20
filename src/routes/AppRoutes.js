@@ -5,30 +5,38 @@ import FinanceDashboard from '../pages/FinanceDashboard/FinanceDashboard';
 import EngineeringDashboard from '../pages/EngineeringDashboard/EngineeringDashboard';
 import HRDashboard from '../pages/HRDashboard/HRDashboard';
 import Home from '../pages/Home/Home';
-
+// import ProjectAllocation from "../pages/EngineeringDashboard/ProjectAllocation";
+import ProjectAllocation from "../pages/EngineeringDashboard/projectAllocation";
+// import TeamMembers from "../pages/EngineeringDashboard/TeamMembers";
+import TeamMembers from "../pages/EngineeringDashboard/TeamMembers";
+ 
 const AppRoutes = ({ role, setRole }) => {
   return (
     <Routes>
-      {/* Home Page Route */}
       <Route path="/" element={<Home setRole={setRole} />} />
-
-      {/* Conditional Role Dashboards */}
-      {role === 'sales' && (
-        <Route path="/dashboard" element={<SalesDashboard />} />
-      )}
-      {role === 'finance' && (
-        <Route path="/dashboard" element={<FinanceDashboard />} />
-      )}
-      {role === 'engineering' && (
-        <Route path="/dashboard" element={<EngineeringDashboard />} />
-      )}
+ 
+      {role === 'sales' && <Route path="/dashboard" element={<SalesDashboard />} />}
+      {role === 'finance' && <Route path="/dashboard" element={<FinanceDashboard />} />}
+     
+      {/* {role === 'engineering' && (
+        <>
+          <Route path="/dashboard" element={<EngineeringDashboard />} />
+          <Route path="/engineering/allocation" element={<EngineeringDashboard view="allocation" />} />
+          <Route path="/engineering/team" element={<EngineeringDashboard view="team" />} />
+        </>
+      )} */}
+      {role === "engineering" && (
+  <>
+    <Route path="/dashboard" element={<EngineeringDashboard />} />
+    <Route path="/allocation" element={<ProjectAllocation />} />
+    <Route path="/team" element={<TeamMembers />} />
+  </>
+)}
+ 
       {role === 'hr' && <Route path="/dashboard" element={<HRDashboard />} />}
-
-      {/* Redirect unknown routes */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
-
+ 
 export default AppRoutes;
-
