@@ -36,7 +36,7 @@ const Navbar = ({ user }) => {
       >
         <div style={{ textAlign: "center" }}>
           <img
-            src={user?.profilePic || "https://via.placeholder.com/50"}
+            src={user?.profilePic || "https://img.freepik.com/premium-photo/financial-advisor-digital-avatar-generative-ai_934475-9119.jpg?w=360"}
             alt="Profile"
             style={{
               width: "50px",

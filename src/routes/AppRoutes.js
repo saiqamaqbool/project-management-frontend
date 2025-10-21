@@ -25,6 +25,15 @@ const AppRoutes = ({ role, setRole }) => {
           <Route path="/engineering/team" element={<EngineeringDashboard view="team" />} />
         </>
       )} */}
+
+       {role === 'finance' && (
+        <>
+          {/* Shows static graphs */}
+          <Route path="/dashboard" element={<FinanceDashboard />} />
+          {/* Shows invoices (same component handles conditional rendering) */}
+          <Route path="/invoices" element={<FinanceDashboard />} />
+        </>
+      )}
       {role === "engineering" && (
   <>
     <Route path="/dashboard" element={<EngineeringDashboard />} />
