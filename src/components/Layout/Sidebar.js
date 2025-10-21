@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiHome, FiUser, FiDollarSign, FiCpu, FiBriefcase, FiPlus, FiSettings, FiHelpCircle } from "react-icons/fi";
-
+ 
 const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
   let menuItems = [];
-
+ 
   switch (role) {
     case "sales":
       menuItems = [
@@ -12,15 +12,15 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
         { name: "Add Client", icon: <FiUser />, action: () => onAddClient && onAddClient() },
       ];
       break;
-
+ 
     case "finance":
       menuItems = [
         { name: "Dashboard", icon: <FiHome />, path: "/dashboard" },
         { name: "Invoices", icon: <FiDollarSign />, path: "/invoices" },
         { name: "Project Payments", icon: <FiDollarSign />, path: "/payments" },
       ];
-      break; 
-
+      break;
+ 
     case "engineering":
       menuItems = [
         { name: "Dashboard", icon: <FiHome />, path: "/dashboard" },
@@ -28,27 +28,27 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
         { name: "Team Members", icon: <FiUser />, path: "/team" },
       ];
       break;
-
-    case "hr":
+ 
+   case "hr":
       menuItems = [
         { name: "Dashboard", icon: <FiHome />, path: "/dashboard" },
-        { name: "Leave Management", icon: <FiUser />, path: "/leaves" },
-        { name: "Add Employee", icon: <FiPlus />, action: () => onAddEmployee && onAddEmployee() },
+        { name: "Leave Management", icon: <FiUser />, path: "/leaves" },       // navigates to LeaveApplicationForm
+        { name: "Add Employee", icon: <FiPlus />, path: "/add-employee" },      // navigates to AddEmployeeForm
       ];
       break;
-
+ 
     default:
       menuItems = [{ name: "Dashboard", icon: <FiHome />, path: "/dashboard" }];
   }
-
+ 
   // Add extra creative items to all roles
   const extraItems = [
     { name: "Settings", icon: <FiSettings />, path: "/settings" },
     { name: "Help", icon: <FiHelpCircle />, path: "/help" },
   ];
-
+ 
   menuItems = [...menuItems, ...extraItems];
-
+ 
   return (
     <div
       style={{
@@ -70,7 +70,7 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
       >
         {role.charAt(0).toUpperCase() + role.slice(1)} Panel
       </h2>
-
+ 
       <ul style={{ listStyle: "none", padding: 0 }}>
         {menuItems.map((item) => (
           <li key={item.name} style={{ marginBottom: "20px" }}>
@@ -125,5 +125,5 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
     </div>
   );
 };
-
+ 
 export default Sidebar;
