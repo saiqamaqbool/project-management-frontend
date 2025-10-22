@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateEmployeeLeaveCounts, fetchEmployees } from "../../../features/employees/employeesSlice";
-import { submitLeaveApplication, fetchEmployeeLeaveCount, clearLeaveStatus, fetchAllLeaveRecords } from "../../../features/Leaves/LeavesSlice";
+import {
+  updateEmployeeLeaveCounts,
+  fetchEmployees,
+} from "../../../features/employees/employeesSlice";
+import {
+  submitLeaveApplication,
+  fetchEmployeeLeaveCount,
+  clearLeaveStatus,
+  fetchAllLeaveRecords,
+} from "../../../features/Leaves/LeavesSlice";
 import { toast } from "react-toastify";
 
 const LeaveApplicationForm = ({ closeForm }) => {
   const dispatch = useDispatch();
-  const { loading, error, newApplication } = useSelector((state) => state.leaves);
+  const { loading, error, newApplication } = useSelector(
+    (state) => state.leaves
+  );
   const { employees } = useSelector((state) => state.employees);
 
   const [formData, setFormData] = useState({
-    employeeId: '',
-    leaveType: "Annual Leave",
+    employeeId: "",
+    leaveType: "",
     fromDate: "",
     toDate: "",
     reason: "",
@@ -29,16 +39,22 @@ const LeaveApplicationForm = ({ closeForm }) => {
       const employeeId = Number(formData.employeeId);
 
       try {
-        const countResult = await dispatch(fetchEmployeeLeaveCount(employeeId)).unwrap();
-        dispatch(updateEmployeeLeaveCounts({
-          employeeId: employeeId,
-          leavesTaken: countResult.leavesTaken,
-          leavesPending: countResult.leavesPending,
-        }));
+        const countResult = await dispatch(
+          fetchEmployeeLeaveCount(employeeId)
+        ).unwrap();
+        dispatch(
+          updateEmployeeLeaveCounts({
+            employeeId: employeeId,
+            leavesTaken: countResult.leavesTaken,
+            leavesPending: countResult.leavesPending,
+          })
+        );
 
         toast.success(`Leave submitted and approved for Employee ${employeeId}.`);
       } catch (e) {
-        toast.warn(`Leave submitted successfully, but failed to fetch the updated count from the API.`);
+        toast.warn(
+          `Leave submitted successfully, but failed to fetch the updated count from the API.`
+        );
       } finally {
         dispatch(clearLeaveStatus());
         dispatch(fetchAllLeaveRecords());
@@ -81,16 +97,30 @@ const LeaveApplicationForm = ({ closeForm }) => {
     dispatch(submitLeaveApplication(leavePayload));
   };
 
-  const inputStyle = { width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", marginBottom: "10px", boxSizing: "border-box" };
-  const formContainerStyle = { background: "#fff", padding: "30px", borderRadius: "15px", boxShadow: "0px 4px 15px rgba(0,0,0,0.2)", maxWidth: "500px", margin: "20px auto" };
+  const inputStyle = {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginBottom: "10px",
+    boxSizing: "border-box",
+  };
+  const formContainerStyle = {
+    background: "#fff",
+    padding: "30px",
+    borderRadius: "15px",
+    boxShadow: "0px 4px 15px rgba(0,0,0,0.2)",
+    maxWidth: "500px",
+    margin: "20px auto",
+  };
   const buttonStyle = (isLoading, isCancel = false) => ({
-    background: isCancel ? "#ccc" : (isLoading ? "#9B70BD" : "#6A0DAD"),
+    background: isCancel ? "#ccc" : isLoading ? "#9B70BD" : "#6A0DAD",
     color: isCancel ? "#333" : "#fff",
     padding: "10px 20px",
     border: "none",
     borderRadius: "10px",
     cursor: isLoading ? "not-allowed" : "pointer",
-    marginLeft: isCancel ? "10px" : "0"
+    marginLeft: isCancel ? "10px" : "0",
   });
 
   // ✅ Get today's date in YYYY-MM-DD format
@@ -118,10 +148,13 @@ const LeaveApplicationForm = ({ closeForm }) => {
           ))}
         </select>
         {employees.length === 0 && (
-          <p style={{ color: 'red', marginTop: '5px' }}>Error: No employees loaded. Please check employee fetching.</p>
+          <p style={{ color: "red", marginTop: "5px" }}>
+            Error: No employees loaded. Please check employee fetching.
+          </p>
         )}
       </div>
 
+      {/* ✅ Leave Type Dropdown with placeholder */}
       <div style={{ marginBottom: "15px" }}>
         <label style={{ display: "block", marginBottom: "5px" }}>Leave Type</label>
         <select
@@ -131,6 +164,9 @@ const LeaveApplicationForm = ({ closeForm }) => {
           required
           style={inputStyle}
         >
+          <option value="" disabled>
+            Select Leave Type
+          </option>
           <option value="Annual Leave">Annual Leave</option>
           <option value="Sick Leave">Sick Leave</option>
           <option value="Unpaid Leave">Unpaid Leave</option>
@@ -138,7 +174,13 @@ const LeaveApplicationForm = ({ closeForm }) => {
       </div>
 
       {/* ✅ Date fields with min attributes */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "15px",
+        }}
+      >
         <div style={{ width: "48%" }}>
           <label style={{ display: "block", marginBottom: "5px" }}>From Date</label>
           <input
@@ -147,7 +189,7 @@ const LeaveApplicationForm = ({ closeForm }) => {
             value={formData.fromDate}
             onChange={handleChange}
             required
-            min={today} // ✅ No past dates allowed
+            min={today}
             style={inputStyle}
           />
         </div>
@@ -159,7 +201,7 @@ const LeaveApplicationForm = ({ closeForm }) => {
             value={formData.toDate}
             onChange={handleChange}
             required
-            min={formData.fromDate || today} // ✅ Only allow future dates from selected fromDate
+            min={formData.fromDate || today}
             style={inputStyle}
           />
         </div>
@@ -181,7 +223,12 @@ const LeaveApplicationForm = ({ closeForm }) => {
         <button type="submit" disabled={loading} style={buttonStyle(loading)}>
           {loading ? "Submitting..." : "Submit & Approve Leave"}
         </button>
-        <button type="button" onClick={closeForm} style={buttonStyle(loading, true)} disabled={loading}>
+        <button
+          type="button"
+          onClick={closeForm}
+          style={buttonStyle(loading, true)}
+          disabled={loading}
+        >
           Cancel
         </button>
       </div>

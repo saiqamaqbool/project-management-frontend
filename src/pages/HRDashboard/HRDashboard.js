@@ -177,7 +177,7 @@ const HRDashboard = () => {
                 }}
               >
                 <h2 style={{ color: "#673AB7", margin: 0 }}>
-                  HR Dashboard (Employee Overview)
+                  HR Dashboard
                 </h2>
 
                 {/* ✅ Employee Search Bar - Top Right */}

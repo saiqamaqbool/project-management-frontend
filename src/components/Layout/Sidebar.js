@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiHome, FiUser, FiDollarSign, FiCpu, FiBriefcase, FiPlus, FiSettings, FiHelpCircle } from "react-icons/fi";
+import { FiHome, FiUser, FiDollarSign, FiCpu, FiBriefcase, FiPlus, FiSettings, FiHelpCircle, FiLogOut } from "react-icons/fi";
  
 const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
   let menuItems = [];
@@ -43,7 +43,7 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
  
   // Add extra creative items to all roles
   const extraItems = [
-    { name: "Settings", icon: <FiSettings />, path: "/settings" },
+    { name: "Logout", icon: <FiLogOut />, path: "/Logout" },
     { name: "Help", icon: <FiHelpCircle />, path: "/help" },
   ];
  

@@ -26,7 +26,7 @@ const AddEmployeeForm = ({ closeForm }) => {
   // ------------------------------------
   useEffect(() => {
     if (newEmployee) {
-      toast.success(`Employee ${newEmployee.employeeId} added successfully!`);
+      toast.success(`Employee added successfully!`);
       dispatch(clearEmployeeStatus());
 
       // Refresh the employee list after adding

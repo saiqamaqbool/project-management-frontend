@@ -3,89 +3,139 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import Sidebar from "../../components/Layout/Sidebar";
 import Navbar from "../../components/Layout/Navbar";
-import { fetchFinanceData, generateInvoices } from "../../features/Finance/financeSlice";
+import {
+  fetchFinanceData,
+  generateInvoices,
+} from "../../features/Finance/financeSlice";
 import { fetchInvoices } from "../../features/invoices/invoicesSlice";
-import { Card, CardContent } from "@mui/material";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
- 
+import { Card, CardContent, Menu, MenuItem, Button } from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import axios from "axios";
+
 const FinanceDashboard = () => {
   const dispatch = useDispatch();
   const location = useLocation();
- 
-  //  pull invoices from invoiceSlice instead of financeSlice
-  const { invoices = [], loading, error } = useSelector((state) => state.invoice || {});
- 
+
+  const { invoices = [], loading, error } = useSelector(
+    (state) => state.invoice || {}
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
- 
+  const [projects, setProjects] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+
   const isInvoicePage = location.pathname.includes("invoices");
- 
-  // Fetch base finance data once
-  // useEffect(() => {
-  //   dispatch(fetchFinanceData());
-  // }, [dispatch]);
- 
-  // //  When user goes to /invoices, generate + fetch them
-  // useEffect(() => {
-  //   if (isInvoicePage) {
-  //     dispatch(generateInvoices());
-  //     dispatch(fetchInvoices());
-  //   }
-  // }, [dispatch, isInvoicePage]);
+
   useEffect(() => {
-  // load base finance data first
-  dispatch(fetchFinanceData());
-}, [dispatch]);
- 
-useEffect(() => {
-  // when the user navigates to /finance/invoices, generate then fetch
-  if (isInvoicePage) {
-    const doGenAndFetch = async () => {
+    const fetchProjects = async () => {
       try {
-        // generateInvoices returns created invoices (per our thunk)
-        await dispatch(generateInvoices()).unwrap(); // unwrap catches/throws errors
+        const res = await axios.get("https://localhost:7243/api/Finance/Projects");
+        setProjects(res.data || []);
       } catch (err) {
-        console.error("generateInvoices failed:", err);
-      } finally {
-        dispatch(fetchInvoices()); // always try to fetch the latest
+        console.error("Failed to load projects:", err);
       }
     };
-    doGenAndFetch();
-  }
-}, [dispatch, isInvoicePage]);
- 
- 
-  const filteredInvoices = invoices.filter(
-    (inv) =>
-      inv.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.employeeEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+    fetchProjects();
+    dispatch(fetchFinanceData());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isInvoicePage) {
+      const doGenAndFetch = async () => {
+        try {
+          await dispatch(generateInvoices()).unwrap();
+        } catch (err) {
+          console.error("Generate invoices failed:", err);
+        } finally {
+          dispatch(fetchInvoices());
+        }
+      };
+      doGenAndFetch();
+    }
+  }, [dispatch, isInvoicePage]);
+
+  // ✅ Filter projects by search term
+  const filteredProjects = projects.filter((proj) =>
+    proj.projectName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
- 
-  const handleSendInvoice = (invoice) => {
-    alert(
-      ` Invoice sent to client (${invoice.clientId})\nEmployee: ${invoice.employeeName}\nProject: ${invoice.projectName}\nTotal: ₹${invoice.totalPay}`
-    );
+
+  const handleMenuOpen = (event, projectId) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedProjectId(projectId);
   };
- 
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedProjectId(null);
+  };
+
+  const handleExportExcel = async () => {
+    if (!selectedProjectId) return;
+    try {
+      const res = await axios.get(
+        `https://localhost:7243/api/Finance/ExportExcel/${selectedProjectId}`,
+        { responseType: "blob" }
+      );
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Project_${selectedProjectId}_Invoices.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      handleMenuClose();
+    } catch (err) {
+      console.error("Excel export failed:", err);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!selectedProjectId) return;
+    try {
+      const res = await axios.get(
+        `https://localhost:7243/api/Finance/ExportPdf/${selectedProjectId}`,
+        { responseType: "blob" }
+      );
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Project_${selectedProjectId}_Invoices.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      handleMenuClose();
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    }
+  };
+
   if (loading)
     return <div style={{ textAlign: "center", marginTop: 100 }}>Loading...</div>;
   if (error)
     return <div style={{ textAlign: "center", marginTop: 100 }}>{error}</div>;
- 
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f9f9fb" }}>
       <Sidebar role="finance" />
- 
+
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <Navbar />
- 
+
         <div style={{ padding: "30px" }}>
           {!isInvoicePage ? (
-            // FINANCE OVERVIEW PAGE
             <>
               <h2 style={{ marginBottom: "20px", fontWeight: "600" }}>
                 Finance Overview
               </h2>
- 
+
               <div
                 style={{
                   display: "grid",
@@ -94,40 +144,16 @@ useEffect(() => {
                   marginBottom: "40px",
                 }}
               >
-                <Card
-                  style={{
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  }}
-                >
+                <Card style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                   <CardContent>
-                    <h3>Total Revenue</h3>
+                    <h3>Total Projects</h3>
                     <p style={{ fontSize: "28px", color: "#6A0DAD" }}>
-                      ₹12,45,000
+                      {projects.length}
                     </p>
                   </CardContent>
                 </Card>
- 
-                <Card
-                  style={{
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <CardContent>
-                    <h3>Pending Payments</h3>
-                    <p style={{ fontSize: "28px", color: "#FF6347" }}>
-                      ₹1,20,000
-                    </p>
-                  </CardContent>
-                </Card>
- 
-                <Card
-                  style={{
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  }}
-                >
+
+                <Card style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                   <CardContent>
                     <h3>Invoices Generated</h3>
                     <p style={{ fontSize: "28px", color: "#008080" }}>
@@ -135,9 +161,17 @@ useEffect(() => {
                     </p>
                   </CardContent>
                 </Card>
+
+                <Card style={{ borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                  <CardContent>
+                    <h3>Active Revenue</h3>
+                    <p style={{ fontSize: "28px", color: "#FF6347" }}>
+                      ₹{projects.reduce((acc, p) => acc + (p.dailyRate || 0), 0)}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
- 
-              {/* Chart */}
+
               <div style={{ marginTop: "40px" }}>
                 <h3>Earnings Trend</h3>
                 <ResponsiveContainer width="100%" height={300}>
@@ -152,53 +186,47 @@ useEffect(() => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar
-                      dataKey="earnings"
-                      fill="#6A0DAD"
-                      radius={[8, 8, 0, 0]}
-                    />
+                    <Bar dataKey="earnings" fill="#6A0DAD" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </>
           ) : (
-            // INVOICE PAGE
             <>
-              <h2 style={{ marginBottom: "20px", fontWeight: "600" }}>
-                Invoices
-              </h2>
- 
-              <input
-                type="text"
-                placeholder="Search by employee name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  maxWidth: "400px",
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  border: "1px solid #ccc",
-                  marginBottom: "30px",
-                  outline: "none",
-                  fontSize: "14px",
-                }}
-              />
- 
-              {filteredInvoices.length === 0 ? (
-                <p>No invoices to show.</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h2 style={{ fontWeight: "600" }}>Invoices</h2>
+                {/* ✅ Search bar filters projects */}
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    border: "1px solid #ccc",
+                    outline: "none",
+                    fontSize: "14px",
+                    width: "300px",
+                  }}
+                />
+              </div>
+
+              <h3 style={{ marginBottom: "20px" }}>Active Projects</h3>
+              {filteredProjects.length === 0 ? (
+                <p>No projects found.</p>
               ) : (
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(320px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
                     gap: "20px",
+                    marginBottom: "30px",
                   }}
                 >
-                  {filteredInvoices.map((inv) => (
+                  {filteredProjects.map((proj) => (
                     <div
-                      key={inv.id}
+                      key={proj.projectId}
                       style={{
                         background: "#fff",
                         borderRadius: "16px",
@@ -206,59 +234,43 @@ useEffect(() => {
                         padding: "20px",
                         transition: "transform 0.2s",
                       }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.transform = "translateY(-4px)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.transform = "translateY(0px)")
-                      }
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-4px)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
                     >
                       <h3 style={{ color: "#4A148C", marginBottom: "12px" }}>
-                        {inv.projectName}
+                        {proj.projectName}
                       </h3>
-                      <p>
-                        <strong>Employee:</strong> {inv.employeeName}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {inv.employeeEmail}
-                      </p>
-                      <p>
-                        <strong>Working Days:</strong> {inv.workingDays}
-                      </p>
-                      <p>
-                        <strong>Rate/Day:</strong> ₹{inv.ratePerDay}
-                      </p>
-                      <p>
-                        <strong>Total Pay:</strong> ₹{inv.totalPay}
-                      </p>
- 
-                      <button
-                        onClick={() => handleSendInvoice(inv)}
-                        style={{
-                          background: "#6A0DAD",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "10px",
-                          padding: "10px 16px",
-                          cursor: "pointer",
-                          width: "100%",
-                          fontWeight: 600,
-                          transition: "0.3s",
-                          marginTop: "10px",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#8A2BE2")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "#6A0DAD")
-                        }
-                      >
-                        Send Invoice
-                      </button>
+                      <p><strong>Description:</strong> {proj.description}</p>
+                      <p><strong>Start Date:</strong> {proj.startDate?.split("T")[0]}</p>
+                      <p><strong>End Date:</strong> {proj.endDate?.split("T")[0]}</p>
+                      <p><strong>Daily Rate:</strong> ₹{proj.dailyRate}</p>
+
+                      <div style={{ textAlign: "center", marginTop: "10px" }}>
+                        <Button
+                          variant="contained"
+                          onClick={(e) => handleMenuOpen(e, proj.projectId)}
+                          style={{
+                            background: "#6A0DAD",
+                            color: "#fff",
+                            borderRadius: "10px",
+                            padding: "10px 16px",
+                            width: "100%",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Export Invoice
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* ✅ MUI Menu for Export */}
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                <MenuItem onClick={handleExportExcel}>Export as Excel</MenuItem>
+                <MenuItem onClick={handleExportPdf}>Export as PDF</MenuItem>
+              </Menu>
             </>
           )}
         </div>
@@ -266,5 +278,5 @@ useEffect(() => {
     </div>
   );
 };
- 
+
 export default FinanceDashboard;

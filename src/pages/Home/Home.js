@@ -61,7 +61,7 @@ const Home = ({ setRole }) => {
       localStorage.setItem("userName", name);
       setRole(normalizedRole);
  
-      toast.success(`Welcome ${name}, logged in as ${role}`);
+      toast.success(`logged in successfully`);
  
       // navigate to dashboard
       navigate("/dashboard");

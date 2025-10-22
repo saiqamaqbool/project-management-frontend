@@ -38,6 +38,9 @@ const AddProjectForm = ({ onSubmit, closeForm }) => {
     });
   };
 
+  // ✅ Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
       <h2>Add Project</h2>
@@ -60,21 +63,27 @@ const AddProjectForm = ({ onSubmit, closeForm }) => {
         style={textAreaStyle}
       />
 
+      {/* ✅ Start Date - cannot be in the past */}
       <input
         name="startDate"
         type="date"
         value={project.startDate}
         onChange={handleChange}
         required
+        min={today} // ✅ Prevent past dates
+        placeholder="Start Date"
         style={inputStyle}
       />
 
+      {/* ✅ End Date - cannot be before Start Date */}
       <input
         name="endDate"
         type="date"
         value={project.endDate}
         onChange={handleChange}
         required
+        min={project.startDate || today} // ✅ Must be >= startDate
+        placeholder="End Date"
         style={inputStyle}
       />
 
@@ -83,7 +92,7 @@ const AddProjectForm = ({ onSubmit, closeForm }) => {
         type="number"
         value={project.dailyRate}
         onChange={handleChange}
-        placeholder="Daily Rate (optional)"
+        placeholder="Daily Rate"
         style={inputStyle}
       />
 
