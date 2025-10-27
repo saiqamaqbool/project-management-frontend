@@ -221,7 +221,7 @@ const LeaveApplicationForm = ({ closeForm }) => {
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button type="submit" disabled={loading} style={buttonStyle(loading)}>
-          {loading ? "Submitting..." : "Submit & Approve Leave"}
+          {loading ? "Submitting..." : "Add Leave"}
         </button>
         <button
           type="button"

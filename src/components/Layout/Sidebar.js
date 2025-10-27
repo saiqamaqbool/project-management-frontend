@@ -17,7 +17,7 @@ const Sidebar = ({ role, onAddEmployee, onAddClient, onAddProject }) => {
       menuItems = [
         { name: "Dashboard", icon: <FiHome />, path: "/dashboard" },
         { name: "Invoices", icon: <FiDollarSign />, path: "/invoices" },
-        { name: "Project Payments", icon: <FiDollarSign />, path: "/payments" },
+        // { name: "Project Payments", icon: <FiDollarSign />, path: "/payments" },
       ];
       break;
  

@@ -10,14 +10,44 @@ import LeaveApplicationForm from "../../components/Layout/Forms/LeaveApplication
 
 const ITEMS_PER_PAGE = 5;
 
-// Helper: calculate leave duration
+// ✅ Helper: calculate leave duration (excluding weekends & holidays)
 const calculateLeaveDuration = (fromDateStr, toDateStr) => {
   if (!fromDateStr || !toDateStr) return 0;
+
   const fromDate = new Date(fromDateStr);
   const toDate = new Date(toDateStr);
   if (isNaN(fromDate) || isNaN(toDate)) return 0;
-  const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+  // ✅ Define holiday list (format: YYYY-MM-DD)
+  const holidays = [
+    "2025-01-01", // New Year
+    "2025-01-26", // Republic Day
+    "2025-08-15", // Independence Day
+    "2025-10-02", // Gandhi Jayanti
+    "2025-12-25", // Christmas
+    "2025-10-20", // Diwali
+    "2025-10-02", // Dasara
+    "2025-12-26", // boxing Day
+
+  ];
+
+  let currentDate = new Date(fromDate);
+  let leaveDays = 0;
+
+  while (currentDate <= toDate) {
+    const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const dateStr = currentDate.toISOString().split("T")[0];
+
+    // ✅ Exclude weekends (Sat/Sun) & holidays
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(dateStr)) {
+      leaveDays++;
+    }
+
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return leaveDays;
 };
 
 const HRDashboard = () => {
@@ -176,9 +206,7 @@ const HRDashboard = () => {
                   marginBottom: "20px",
                 }}
               >
-                <h2 style={{ color: "#673AB7", margin: 0 }}>
-                  HR Dashboard
-                </h2>
+                <h2 style={{ color: "#673AB7", margin: 0 }}>HR Dashboard</h2>
 
                 {/* ✅ Employee Search Bar - Top Right */}
                 <input
@@ -239,9 +267,7 @@ const HRDashboard = () => {
                       marginBottom: "10px",
                     }}
                   >
-                    <h3 style={{ color: "#3F51B5", margin: 0 }}>
-                      All Leave Records
-                    </h3>
+                    <h3 style={{ color: "#3F51B5", margin: 0 }}>All Leave Records</h3>
 
                     {/* ✅ Leave Records Search Bar - Top Right */}
                     <input
