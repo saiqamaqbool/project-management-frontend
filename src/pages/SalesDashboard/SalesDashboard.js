@@ -93,6 +93,7 @@ const SalesDashboard = () => {
           setShowAddClientForm(true); // ✅ open standalone AddClient view
         }}
         onAddProject={() => selectedClient && setShowAddProjectForm(true)}
+        onDashboardClick={handleBackToClients}
       />
       <div style={{ flex: 1 }}>
         <Navbar />

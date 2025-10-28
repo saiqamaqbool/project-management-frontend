@@ -27,8 +27,7 @@ const calculateLeaveDuration = (fromDateStr, toDateStr) => {
     "2025-12-25", // Christmas
     "2025-10-20", // Diwali
     "2025-10-02", // Dasara
-    "2025-12-26", // boxing Day
-
+    "2025-12-26", // Boxing Day
   ];
 
   let currentDate = new Date(fromDate);
@@ -166,22 +165,47 @@ const HRDashboard = () => {
     return { paginatedLeaves: paginated, totalLeavesPages: totalPages };
   }, [processedLeaves, leavesSearchTerm, currentLeavesPage]);
 
+  // -------------------- ✅ Updated Pagination Controls --------------------
   const PaginationControls = ({ currentPage, totalPages, setCurrentPage }) => (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: "15px" }}>
+    <div style={{ display: "flex", justifyContent: "center", marginTop: "20px", gap: "15px" }}>
       <button
         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
         disabled={currentPage === 1}
+        style={{
+          background: currentPage === 1 ? "#D1C4E9" : "#673AB7",
+          color: "white",
+          padding: "8px 16px",
+          border: "none",
+          borderRadius: "8px",
+          cursor: currentPage === 1 ? "not-allowed" : "pointer",
+          transition: "background 0.3s ease",
+        }}
       >
-        Previous
+        ◀ Previous
       </button>
-      <span style={{ margin: "0 15px" }}>
+
+      <span style={{ alignSelf: "center", fontWeight: "500", color: "#333" }}>
         Page {currentPage} of {totalPages}
       </span>
+
       <button
         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
         disabled={currentPage === totalPages || totalPages === 0}
+        style={{
+          background:
+            currentPage === totalPages || totalPages === 0 ? "#D1C4E9" : "#673AB7",
+          color: "white",
+          padding: "8px 16px",
+          border: "none",
+          borderRadius: "8px",
+          cursor:
+            currentPage === totalPages || totalPages === 0
+              ? "not-allowed"
+              : "pointer",
+          transition: "background 0.3s ease",
+        }}
       >
-        Next
+        Next ▶
       </button>
     </div>
   );
@@ -208,7 +232,7 @@ const HRDashboard = () => {
               >
                 <h2 style={{ color: "#673AB7", margin: 0 }}>HR Dashboard</h2>
 
-                {/* ✅ Employee Search Bar - Top Right */}
+                {/* ✅ Employee Search Bar */}
                 <input
                   type="text"
                   placeholder="Search employees..."
@@ -269,7 +293,7 @@ const HRDashboard = () => {
                   >
                     <h3 style={{ color: "#3F51B5", margin: 0 }}>All Leave Records</h3>
 
-                    {/* ✅ Leave Records Search Bar - Top Right */}
+                    {/* ✅ Leave Records Search Bar */}
                     <input
                       type="text"
                       placeholder="Search leave records..."

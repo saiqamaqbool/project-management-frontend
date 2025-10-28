@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Menu, MenuItem } from "@mui/material";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [user, setUser] = useState({ name: "", email: "", profilePic: "" });
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -15,28 +16,34 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    console.log("Logout clicked");
-    // Add your logout logic here (e.g., clearing token/localStorage)
+    // ✅ Clear storage & redirect to home
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("token");
     handleMenuClose();
+    navigate("/"); // ✅ Navigate to Home Dashboard
   };
 
-  // Fetch user data from API
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get("https://localhost:7243/api/User");
-        // Assuming response.data contains { name, email, profilePic }
-        setUser({
-          name: response.data.name,
-          email: response.data.email,
-          profilePic: response.data.profilePic || "",
-        });
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+    const role = localStorage.getItem("userRole");
+    const name = localStorage.getItem("userName");
+
+    // ✅ Assign images based on role (from Home dashboard)
+    const roleImages = {
+      sales: "/images/Sales.jpg",
+      finance: "/images/Finance.jpg",
+      engineering: "/images/Engineering.jpg",
+      hr: "/images/HR.jpg",
     };
 
-    fetchUser();
+    // ✅ Assign default email pattern
+    const email = name ? `${name.toLowerCase().replace(" ", ".")}@abstract-group.com` : "user@abstract-group.com";
+
+    setUser({
+      name: name || "User",
+      email,
+      profilePic: roleImages[role?.toLowerCase()] || "/images/HR.jpg",
+    });
   }, []);
 
   return (
@@ -44,7 +51,7 @@ const Navbar = () => {
       style={{
         height: "70px",
         width: "100%",
-        background: "#8A2BE2",
+        background: "#b68cddff",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -62,13 +69,20 @@ const Navbar = () => {
       </div>
 
       {/* Right: Profile Section */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", maxHeight: "70px" }}>
-        <div style={{ textAlign: "center", cursor: "pointer" }} onClick={handleMenuOpen}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          maxHeight: "70px",
+        }}
+      >
+        <div
+          style={{ textAlign: "center", cursor: "pointer" }}
+          onClick={handleMenuOpen}
+        >
           <img
-            src={
-              user.profilePic ||
-              "https://img.freepik.com/premium-photo/financial-advisor-digital-avatar-generative-ai_934475-9119.jpg?w=360"
-            }
+            src={user.profilePic}
             alt="Profile"
             style={{
               width: "50px",
@@ -79,8 +93,14 @@ const Navbar = () => {
               display: "block",
             }}
           />
-          <div style={{ fontSize: "12px", marginTop: "3px", whiteSpace: "nowrap" }}>
-            {user.name || "Edit Profile"}
+          <div
+            style={{
+              fontSize: "12px",
+              marginTop: "3px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {/* {user.name} */}
           </div>
         </div>
 
@@ -93,10 +113,13 @@ const Navbar = () => {
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <MenuItem>
-            <strong>{user.name || "Username"}</strong>
+            <strong>{user.name}</strong>
           </MenuItem>
-          <MenuItem>{user.email || "user@example.com"}</MenuItem>
-          <MenuItem onClick={handleLogout} style={{ color: "red" }}>
+          <MenuItem>{user.email}</MenuItem>
+          <MenuItem
+            onClick={handleLogout}
+            style={{ color: "red", fontWeight: "600" }}
+          >
             Logout
           </MenuItem>
         </Menu>

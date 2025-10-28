@@ -87,7 +87,7 @@ const AddProjectForm = ({ onSubmit, closeForm }) => {
         type="number"
         value={project.dailyRate}
         onChange={handleChange}
-        placeholder="Daily Rate"
+        placeholder="£ Daily Rate"
         style={inputStyle}
       />
 
@@ -105,14 +105,17 @@ const AddProjectForm = ({ onSubmit, closeForm }) => {
 
 export default AddProjectForm;
 
+// ✅ Only width adjusted
 const formStyle = {
   background: "#fff",
   padding: "20px",
   borderRadius: "15px",
   boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-  minWidth: "350px",
+  minWidth: "280px", // 🔹 reduced from 350px
+  maxWidth: "750px", // 🔹 added to keep form compact
   marginBottom: "20px",
 };
+
 const inputStyle = {
   width: "100%",
   marginBottom: "10px",
