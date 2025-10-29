@@ -3,12 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // ------------------------------------
-// Async Thunks (Endpoints remain unchanged)
+// Async Thunks
 // ------------------------------------
 
 // Fetch all projects (SalesManager endpoint)
 export const fetchProjects = createAsyncThunk(
-  "projects/fetchProjects", // renamed from fetchAllProjects
+  "projects/fetchProjects",
   async () => {
     const response = await axios.get("https://localhost:7243/api/SalesManager/projects");
     return response.data;
@@ -57,50 +57,48 @@ const projectsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // fetchProjects
-    builder.addCase(fetchProjects.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchProjects.fulfilled, (state, action) => {
-      state.loading = false;
-      state.projects = action.payload;
-    });
-    builder.addCase(fetchProjects.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    });
-
-    // fetchProjectsByClient
-    builder.addCase(fetchProjectsByClient.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchProjectsByClient.fulfilled, (state, action) => {
-      state.loading = false;
-      state.projects = action.payload;
-    });
-    builder.addCase(fetchProjectsByClient.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    });
-
-    // addProject
-    builder.addCase(addProject.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(addProject.fulfilled, (state, action) => {
-      state.loading = false;
-      state.projects.push(action.payload);
-    });
-    builder.addCase(addProject.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    });
+    builder
+      // fetchProjects
+      .addCase(fetchProjects.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProjects.fulfilled, (state, action) => {
+        state.loading = false;
+        state.projects = action.payload;
+      })
+      .addCase(fetchProjects.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // fetchProjectsByClient
+      .addCase(fetchProjectsByClient.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProjectsByClient.fulfilled, (state, action) => {
+        state.loading = false;
+        state.projects = action.payload;
+      })
+      .addCase(fetchProjectsByClient.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      // addProject
+      .addCase(addProject.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addProject.fulfilled, (state, action) => {
+        state.loading = false;
+        state.projects.push(action.payload);
+      })
+      .addCase(addProject.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
   },
 });
 
-// ✅ Export actions and reducer
 export const { clearProjects, addProjectLocal } = projectsSlice.actions;
 export default projectsSlice.reducer;

@@ -1,3 +1,4 @@
+// src/pages/SalesDashboard/SalesDashboard.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../../components/Layout/Sidebar";
@@ -40,8 +41,6 @@ const SalesDashboard = () => {
     try {
       const action = await dispatch(addClient(clientData));
       const newClient = action.payload;
-
-      // ✅ After adding client, show all clients again
       setShowAddClientForm(false);
       setSelectedClient(null);
       dispatch(fetchClients());
@@ -50,6 +49,7 @@ const SalesDashboard = () => {
     }
   };
 
+  // ✅ Add project and immediately show under correct client
   const handleAddProject = async (projectData) => {
     if (!selectedClient) return;
 
@@ -60,12 +60,13 @@ const SalesDashboard = () => {
       const newProject = action.payload;
 
       if (newProject) {
-        dispatch(addProjectLocal(newProject));
+        dispatch(addProjectLocal(newProject)); // update local instantly
       }
 
-      // ✅ After adding project, hide form and reload all projects
-      setShowAddProjectForm(false);
+      // Refresh the selected client's projects
       await dispatch(fetchProjectsByClient(selectedClient.clientId));
+
+      setShowAddProjectForm(false);
     } catch (err) {
       console.error("Error adding project:", err);
     }
@@ -90,7 +91,7 @@ const SalesDashboard = () => {
         onAddClient={() => {
           setSelectedClient(null);
           setShowAddProjectForm(false);
-          setShowAddClientForm(true); // ✅ open standalone AddClient view
+          setShowAddClientForm(true);
         }}
         onAddProject={() => selectedClient && setShowAddProjectForm(true)}
         onDashboardClick={handleBackToClients}
@@ -104,7 +105,6 @@ const SalesDashboard = () => {
             minHeight: "90vh",
           }}
         >
-          {/* ✅ If AddClientForm is open, show ONLY that form */}
           {showAddClientForm ? (
             <div>
               <button
@@ -275,11 +275,19 @@ const SalesDashboard = () => {
                               </p>
                               <p>
                                 <strong>Start:</strong>{" "}
-                                {project.startDate?.split("T")[0]}
+                                {project.startDate
+                                  ? new Date(project.startDate)
+                                      .toISOString()
+                                      .split("T")[0]
+                                  : "N/A"}
                               </p>
                               <p>
                                 <strong>End:</strong>{" "}
-                                {project.endDate?.split("T")[0]}
+                                {project.endDate
+                                  ? new Date(project.endDate)
+                                      .toISOString()
+                                      .split("T")[0]
+                                  : "N/A"}
                               </p>
                               <p>
                                 <strong>Daily Rate:</strong>{" "}

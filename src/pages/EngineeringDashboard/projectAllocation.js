@@ -29,6 +29,8 @@ const ProjectAllocation = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [allocationPercent, setAllocationPercent] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [clientCache, setClientCache] = useState({});
 
   useEffect(() => {
@@ -51,14 +53,24 @@ const ProjectAllocation = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
       !selectedClientId ||
       !selectedProjectId ||
       !selectedEmployeeId ||
       !allocationPercent ||
-      !selectedRole
-    )
+      !selectedRole ||
+      !startDate ||
+      !endDate
+    ) {
+      toast.error("Please fill all required fields!");
       return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      toast.error("End date must be after start date!");
+      return;
+    }
 
     const payload = {
       clientId: selectedClientId,
@@ -66,40 +78,36 @@ const ProjectAllocation = () => {
       employeeId: selectedEmployeeId,
       roleName: selectedRole,
       allocationPercent: Number(allocationPercent),
-      startDate: new Date().toISOString(),
-      endDate: new Date(
-        new Date().setMonth(new Date().getMonth() + 1)
-      ).toISOString(),
+      startDate,
+      endDate,
       billable: true,
     };
 
     try {
-      const result = await dispatch(assignEmployee(payload)).unwrap();
+      await dispatch(assignEmployee(payload)).unwrap();
       toast.success("Employee assigned successfully!");
     } catch (err) {
-      // ✅ Show backend message (e.g., when total allocation exceeds 100%)
       const errorMessage =
         err?.message ||
         err?.response?.data?.message ||
-        "Employee exceeds his 100% allocation";
+        "Employee exceeds their 100% allocation";
       toast.error(errorMessage);
     }
 
-    // ✅ Refresh allocations and related data
     await dispatch(fetchAllocations());
     await dispatch(fetchClients());
     await dispatch(fetchProjectsByClient(selectedClientId));
     await dispatch(fetchEmployees());
 
-    // Reset form
     setSelectedClientId("");
     setSelectedProjectId("");
     setSelectedEmployeeId("");
     setAllocationPercent("");
     setSelectedRole("");
+    setStartDate("");
+    setEndDate("");
   };
 
-  // ✅ Helper to fetch client name from backend if not in Redux
   const fetchClientNameIfMissing = async (clientId) => {
     if (!clientId || clientCache[clientId]) return;
     try {
@@ -124,13 +132,7 @@ const ProjectAllocation = () => {
         <Navbar />
         <ToastContainer position="top-right" autoClose={3000} />
 
-        <div
-          style={{
-            padding: "20px",
-            minHeight: "90vh",
-            background: "#F5F5F5",
-          }}
-        >
+        <div style={{ padding: "20px", minHeight: "90vh", background: "#F5F5F5" }}>
           <h2 style={{ color: "#673AB7" }}>Project Allocation</h2>
 
           {/* Allocation Form */}
@@ -144,6 +146,7 @@ const ProjectAllocation = () => {
                 alignItems: "center",
               }}
             >
+              {/* Client */}
               <select
                 value={selectedClientId}
                 onChange={handleClientChange}
@@ -158,6 +161,7 @@ const ProjectAllocation = () => {
                 ))}
               </select>
 
+              {/* Project */}
               <select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
@@ -173,6 +177,7 @@ const ProjectAllocation = () => {
                 ))}
               </select>
 
+              {/* Employee */}
               <select
                 value={selectedEmployeeId}
                 onChange={(e) => setSelectedEmployeeId(e.target.value)}
@@ -187,6 +192,7 @@ const ProjectAllocation = () => {
                 ))}
               </select>
 
+              {/* Role */}
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
@@ -203,6 +209,7 @@ const ProjectAllocation = () => {
                 )}
               </select>
 
+              {/* Allocation */}
               <input
                 type="number"
                 placeholder="% Allocation"
@@ -212,9 +219,29 @@ const ProjectAllocation = () => {
                 required
               />
 
-              <button type="submit" style={submitBtn}>
-                Assign
-              </button>
+              {/* Start Date */}
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={inputStyle}
+                required
+              />
+
+              {/* End Date */}
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={inputStyle}
+                required
+              />
+
+              <div style={{ flex: 1, textAlign: "right" }}>
+                <button type="submit" style={submitBtn}>
+                      Assign
+                </button>
+              </div>
             </form>
           </div>
 
@@ -251,13 +278,13 @@ const ProjectAllocation = () => {
                     key={a.assignmentId || `${a.projectId}-${a.employeeId}`}
                     style={allocationCard}
                   >
-                    {/* <p>
-                      <strong>Client:</strong> {clientName}
-                    </p> */}
                     <p>
                       <strong>Project:</strong>{" "}
                       {project.projectName || "Unknown Project"}
                     </p>
+                    {/* <p>
+                      <strong>Client:</strong> {clientName}
+                    </p> */}
                     <p>
                       <strong>Employee:</strong> {employee.firstName}{" "}
                       {employee.lastName}
@@ -268,6 +295,12 @@ const ProjectAllocation = () => {
                     </p>
                     <p>
                       <strong>Allocation:</strong> {a.allocationPercent}%
+                    </p>
+                    <p>
+                      <strong>Start:</strong> {a.startDate || "-"}
+                    </p>
+                    <p>
+                      <strong>End:</strong> {a.endDate || "-"}
                     </p>
                   </div>
                 );

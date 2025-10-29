@@ -1,4 +1,3 @@
-// src/features/allocations/allocationsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -13,9 +12,11 @@ export const fetchAllocations = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/allocations`);
-      return response.data; // backend returns array of allocations with projectId, employeeName, clientId, roleName, allocationPercent
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch allocations.");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch allocations."
+      );
     }
   }
 );
@@ -36,12 +37,14 @@ export const assignEmployee = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to assign employee.");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to assign employee."
+      );
     }
   }
 );
 
-// Fetch employees for dropdown
+// Fetch employees
 export const fetchEmployees = createAsyncThunk(
   "allocations/fetchEmployees",
   async (_, { rejectWithValue }) => {
@@ -49,20 +52,9 @@ export const fetchEmployees = createAsyncThunk(
       const response = await axios.get(`${EMPLOYEE_API_URL}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch employees.");
-    }
-  }
-);
-
-// Fetch roles for dropdown
-export const fetchRoles = createAsyncThunk(
-  "allocations/fetchRoles",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${API_URL}/employees/byRoleName`);
-      return response.data; // [{ roleName: "Software Engineer" }, { roleName: "QA Engineer" }]
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch roles.");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch employees."
+      );
     }
   }
 );
@@ -71,7 +63,7 @@ export const fetchRoles = createAsyncThunk(
 const allocationsSlice = createSlice({
   name: "allocations",
   initialState: {
-    allocations: [],  // directly used in dashboard
+    allocations: [],
     employees: [],
     roles: [],
     loading: false,
@@ -83,33 +75,48 @@ const allocationsSlice = createSlice({
       state.error = null;
       state.newAssignment = null;
     },
+
+    // ✅ NEW: Clear allocations when user logs out
+    clearAllocations: (state) => {
+      state.allocations = [];
+    },
   },
   extraReducers: (builder) => {
-    // Fetch allocations
     builder
-      .addCase(fetchAllocations.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchAllocations.fulfilled, (state, action) => { state.loading = false; state.allocations = action.payload; })
-      .addCase(fetchAllocations.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
-
-    // Assign employee
-    builder
-      .addCase(assignEmployee.pending, (state) => { state.loading = true; state.error = null; state.newAssignment = null; })
-      .addCase(assignEmployee.fulfilled, (state, action) => { state.loading = false; state.allocations.push(action.payload); state.newAssignment = action.payload; })
-      .addCase(assignEmployee.rejected, (state, action) => { state.loading = false; state.error = action.payload; state.newAssignment = null; });
-
-    // Fetch employees
-    builder
-      .addCase(fetchEmployees.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchEmployees.fulfilled, (state, action) => { state.loading = false; state.employees = action.payload; })
-      .addCase(fetchEmployees.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
-
-    // Fetch roles
-    builder
-      .addCase(fetchRoles.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchRoles.fulfilled, (state, action) => { state.loading = false; state.roles = action.payload; })
-      .addCase(fetchRoles.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+      .addCase(fetchAllocations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllocations.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allocations = action.payload;
+      })
+      .addCase(fetchAllocations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(assignEmployee.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(assignEmployee.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allocations.push(action.payload);
+        state.newAssignment = action.payload;
+      })
+      .addCase(assignEmployee.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.newAssignment = null;
+      })
+      .addCase(fetchEmployees.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employees = action.payload;
+      });
   },
 });
 
-export const { clearAllocationStatus } = allocationsSlice.actions;
+// ✅ Export new clearAllocations action
+export const { clearAllocationStatus, clearAllocations } = allocationsSlice.actions;
+
 export default allocationsSlice.reducer;
